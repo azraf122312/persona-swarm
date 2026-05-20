@@ -1,0 +1,6 @@
+playwright
+streamlit
+plotly
+python-dotenv
+openai
+anthropic
