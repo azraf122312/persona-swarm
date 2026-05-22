@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Persona Swarm — run a swarm</title>
+  <meta name="description" content="Launch a persona swarm against any URL — live in your browser." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===== NAV ===== -->
+  <header class="nav scrolled" id="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">🐝</span>
+        <span class="brand-name">Persona&nbsp;Swarm</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html#how">How it works</a>
+        <a href="index.html#personas">Personas</a>
+        <a href="index.html#report">The report</a>
+      </nav>
+      <a class="btn btn-ghost btn-sm" href="index.html">← Landing</a>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ===== APP HEAD ===== -->
+    <section class="app-head">
+      <div class="container">
+        <div class="eyebrow">Run a swarm</div>
+        <h1 class="app-title">Point the swarm at a <em>real URL</em>.</h1>
+        <p class="app-sub">
+          Enter a URL and a goal, pick your personas, and the swarm runs live —
+          mapping the site, exploring it in character, then judging the result.
+        </p>
+      </div>
+    </section>
+
+    <div class="container app-wrap">
+
+      <!-- ===== FORM ===== -->
+      <form id="run-form" class="panel form-panel" autocomplete="off">
+        <div class="field">
+          <label for="f-url">Target URL</label>
+          <input id="f-url" name="url" type="url" placeholder="https://example.com" required />
+        </div>
+
+        <div class="field">
+          <label for="f-goal">Goal — what should a user be able to do?</label>
+          <input id="f-goal" name="goal" type="text" placeholder="Sign up for an account" required />
+          <p class="hint">Plain language. Every persona tries exactly this.</p>
+        </div>
+
+        <div class="field-grid-3">
+          <div class="field">
+            <label for="f-provider">AI provider</label>
+            <select id="f-provider" name="provider">
+              <option value="anthropic">Anthropic</option>
+              <option value="openai">OpenAI</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-model">Model</label>
+            <input id="f-model" name="model" type="text" />
+          </div>
+          <div class="field">
+            <label for="f-key">API key</label>
+            <input id="f-key" name="api_key" type="password" placeholder="sk-ant-..." />
+          </div>
+        </div>
+        <p class="hint key-hint">
+          Your key is sent only to your local server for this run — never stored.
+        </p>
+
+        <div class="field">
+          <label>Personas in the swarm</label>
+          <div class="pick-grid" id="persona-pick"><!-- rendered by app.js --></div>
+          <div class="pick-actions">
+            <button type="button" class="linkbtn" id="pick-all">Select all</button>
+            <button type="button" class="linkbtn" id="pick-none">Clear</button>
+          </div>
+        </div>
+
+        <details class="adv">
+          <summary>Advanced settings</summary>
+          <div class="adv-body">
+            <div class="slider">
+              <label for="f-steps">Max steps / persona <b id="v-steps">15</b></label>
+              <input id="f-steps" type="range" min="5" max="30" value="15" />
+            </div>
+            <div class="slider">
+              <label for="f-pages">Site map — max pages <b id="v-pages">20</b></label>
+              <input id="f-pages" type="range" min="3" max="40" value="20" />
+            </div>
+            <div class="slider">
+              <label for="f-conc">Parallel personas <b id="v-conc">4</b></label>
+              <input id="f-conc" type="range" min="1" max="8" value="4" />
+            </div>
+          </div>
+        </details>
+
+        <div class="form-errors" id="form-errors" hidden></div>
+
+        <button type="submit" class="btn btn-primary btn-launch" id="launch-btn">
+          Launch the swarm
+        </button>
+        <noscript>
+          <p class="hint">This page needs JavaScript and a running server (<code>python server.py</code>).</p>
+        </noscript>
+      </form>
+
+      <!-- ===== PROGRESS ===== -->
+      <section class="panel run-progress" id="progress-panel" hidden>
+        <div class="progress-head">
+          <div>
+            <div class="progress-phase" id="progress-phase">Starting…</div>
+            <div class="progress-meta" id="progress-meta"></div>
+          </div>
+          <div class="spinner" id="progress-spin"></div>
+        </div>
+        <div class="console-rows" id="progress-rows"></div>
+      </section>
+
+      <!-- ===== RESULTS (built by app.js) ===== -->
+      <section id="results-panel" hidden></section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="brand">
+        <span class="brand-mark">🐝</span>
+        <span class="brand-name">Persona Swarm</span>
+      </div>
+      <p class="footer-note">A swarm of personas tests your app. Built with Playwright + Flask.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

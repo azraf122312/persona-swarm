@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Persona Swarm — a swarm of personas tests your app</title>
+  <meta name="description" content="Drop a URL and a goal. Eight distinct user personas each try to accomplish it in their own browser. Get every dead end, blocker, and confusing flow real people hit." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===== NAV ===== -->
+  <header class="nav" id="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark">🐝</span>
+        <span class="brand-name">Persona&nbsp;Swarm</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#problem">Why</a>
+        <a href="#how">How it works</a>
+        <a href="#personas">Personas</a>
+        <a href="#report">The report</a>
+      </nav>
+      <a class="btn btn-primary btn-sm" href="run.html">Launch a swarm</a>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="container">
+        <div class="eyebrow reveal">Autonomous usability testing</div>
+        <h1 class="hero-title reveal">
+          A swarm of <em>personas</em><br />tests your app
+        </h1>
+        <p class="hero-sub reveal">
+          Drop a URL and a goal. Eight distinct user personas — each in its own
+          browser, each reasoning differently — try to accomplish it. Get every
+          dead end, blocker, and confusing flow real people hit.
+        </p>
+        <div class="hero-cta reveal">
+          <a class="btn btn-primary" href="run.html">Launch a swarm</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+        <div class="hero-stats reveal">
+          <span><b>8</b> distinct personas</span>
+          <span class="dot">·</span>
+          <span><b>parallel</b> browsers</span>
+          <span class="dot">·</span>
+          <span><b>regression</b> tracking</span>
+        </div>
+
+        <!-- live swarm console -->
+        <div class="console reveal" id="console">
+          <div class="console-bar">
+            <span class="cdot"></span><span class="cdot"></span><span class="cdot"></span>
+            <span class="console-title">persona-swarm — run</span>
+          </div>
+          <div class="console-body">
+            <div class="console-cmd">
+              <span class="prompt">$</span> swarm run
+              <span class="arg">--url</span> shop.example.com
+              <span class="arg">--goal</span> "buy a product"
+            </div>
+            <div class="console-rows" id="console-rows"><!-- rendered by JS --></div>
+            <div class="console-foot" id="console-foot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROBLEM ===== -->
+    <section class="section" id="problem">
+      <div class="container">
+        <div class="kicker reveal">The problem</div>
+        <h2 class="section-title reveal">
+          One test bot finds <em>one kind</em> of bug.
+        </h2>
+        <p class="section-lead reveal">
+          A scripted happy-path test only ever fails the way it was written to.
+          But your users aren't one person — they're impatient, cautious,
+          on a phone, using a screen reader, distrustful, distracted.
+          Each one gets stuck somewhere different, and a single bot never sees it.
+        </p>
+        <div class="contrast reveal">
+          <div class="contrast-col bad">
+            <div class="contrast-h">One bot</div>
+            <ul>
+              <li>Follows the path it was scripted for</li>
+              <li>Reports the bug it was told to look for</li>
+              <li>Never feels friction — it has no patience to lose</li>
+            </ul>
+          </div>
+          <div class="contrast-col good">
+            <div class="contrast-h">A persona swarm</div>
+            <ul>
+              <li>Eight users reason and behave differently</li>
+              <li>Each abandons, hesitates, and rage-clicks on its own</li>
+              <li>Divergent coverage one bot could never produce</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section class="section" id="how">
+      <div class="container">
+        <div class="kicker reveal">How it works</div>
+        <h2 class="section-title reveal">From a URL to a verdict in five steps.</h2>
+        <ol class="steps">
+          <li class="step reveal">
+            <span class="step-no">01</span>
+            <h3>Map the site</h3>
+            <p>A crawler walks the target once and builds a page graph the swarm uses for orientation.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-no">02</span>
+            <h3>Spawn the swarm</h3>
+            <p>One agent per persona launches — each in an isolated browser, with its own viewport and mindset.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-no">03</span>
+            <h3>Navigate in character</h3>
+            <p>Every agent perceives the live page and decides its next move <em>as that persona</em>, logging friction the way that user would feel it.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-no">04</span>
+            <h3>Judge the runs</h3>
+            <p>An independent judge scores each persona, finds blockers that hit several of them, and ranks the fixes.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-no">05</span>
+            <h3>Diff for regressions</h3>
+            <p>Every run is remembered. Re-run later and the swarm flags any persona that went from success to failure.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== PERSONAS ===== -->
+    <section class="section" id="personas">
+      <div class="container">
+        <div class="kicker reveal">The swarm</div>
+        <h2 class="section-title reveal">Meet the <em>personas</em>.</h2>
+        <p class="section-lead reveal">
+          Each persona is a different person — different patience, different
+          viewport, different idea of what counts as broken.
+        </p>
+        <div class="persona-grid" id="persona-grid"><!-- rendered by JS --></div>
+      </div>
+    </section>
+
+    <!-- ===== REPORT ===== -->
+    <section class="section" id="report">
+      <div class="container">
+        <div class="kicker reveal">The report</div>
+        <h2 class="section-title reveal">A verdict, not a wall of logs.</h2>
+        <div class="report-card reveal">
+          <div class="report-head">
+            <div>
+              <div class="report-goal">Goal — “Buy a product”</div>
+              <div class="report-url">shop.example.com</div>
+            </div>
+            <div class="score-ring" id="score-ring">
+              <div class="score-num"><span id="score-val">0</span><small>/100</small></div>
+              <div class="score-label">health</div>
+            </div>
+          </div>
+          <div class="report-headline">
+            5 of 8 personas reached checkout. A late-revealed shipping fee and a
+            tiny mobile tap target are the costliest blockers.
+          </div>
+          <div class="report-cols">
+            <div class="report-block">
+              <div class="report-block-h">Shared blockers</div>
+              <ul class="blocker-list">
+                <li><span class="sev sev-blocker"></span>Shipping cost only shown on the final step</li>
+                <li><span class="sev sev-blocker"></span>“Checkout” button is a 16px tap target on mobile</li>
+                <li><span class="sev sev-major"></span>Forced account creation before the cart is visible</li>
+              </ul>
+            </div>
+            <div class="report-block">
+              <div class="report-block-h">Persona verdicts</div>
+              <ul class="verdict-list" id="verdict-list"><!-- rendered by JS --></ul>
+            </div>
+          </div>
+          <div class="report-foot">
+            <span class="regress-tag">▲ Regression</span>
+            Skeptical Shopper went <b>success → failure</b> since the last run.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RUN / CTA ===== -->
+    <section class="section section-cta" id="run">
+      <div class="container">
+        <h2 class="cta-title reveal">Stop guessing how users <em>fail</em>.</h2>
+        <p class="section-lead reveal">
+          Persona Swarm runs in your browser and locally. Drop in a URL, pick
+          your personas, and watch the swarm go.
+        </p>
+        <div class="run-block reveal">
+          <div class="console-bar">
+            <span class="cdot"></span><span class="cdot"></span><span class="cdot"></span>
+            <span class="console-title">getting started</span>
+          </div>
+          <pre class="run-code"><span class="c-cmt"># install</span>
+pip install -r requirements.txt
+playwright install chromium
+
+<span class="c-cmt"># launch the web app</span>
+python server.py</pre>
+        </div>
+        <div class="hero-cta reveal">
+          <a class="btn btn-primary" href="run.html">Launch a swarm</a>
+          <a class="btn btn-ghost" href="https://github.com" target="_blank" rel="noopener">View the code</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="brand">
+        <span class="brand-mark">🐝</span>
+        <span class="brand-name">Persona Swarm</span>
+      </div>
+      <p class="footer-note">A swarm of personas tests your app. Built with Playwright + Streamlit.</p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
