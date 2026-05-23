@@ -4,7 +4,9 @@ core/crawler.py - Lightweight site mapper.
 Runs once before the swarm. Produces a SiteMap (which pages exist, how they
 link together) so the dashboard can show coverage and personas get a hint of
 the site's shape. Persona agents do their own live perception while navigating;
-this is just the overview pass.
+this is just the overview pass — but it also harvests every signal the static
+auditor needs (meta tags, broken-link candidates, alt-text gaps, tap targets,
+mixed-content, lorem-ipsum) so a single visit produces everything downstream.
 """
 
 import time
@@ -23,6 +25,117 @@ SKIP_EXTS = {
     ".woff", ".woff2", ".ico", ".webp",
 }
 
+# Injected per page — single round-trip to collect everything the auditor needs.
+_AUDIT_JS = r"""
+() => {
+  const head = document.head || document;
+  const meta = (sel) => {
+    const el = head.querySelector(sel);
+    return el ? (el.getAttribute('content') || '').trim() : '';
+  };
+  const og = {};
+  ['title','description','image','url','type','site_name'].forEach(k => {
+    const v = meta("meta[property='og:" + k + "']");
+    if (v) og[k] = v;
+  });
+  const canonicalEl = head.querySelector("link[rel='canonical']");
+  const canonical = canonicalEl ? (canonicalEl.getAttribute('href') || '') : '';
+
+  // links — href + visible text
+  const links = Array.from(document.querySelectorAll('a[href]')).slice(0, 200).map(a => ({
+    href: a.href,
+    text: (a.innerText || a.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+  }));
+
+  // images without alt (skip purely decorative if explicitly aria-hidden)
+  let imgsNoAlt = 0;
+  Array.from(document.querySelectorAll('img')).forEach(img => {
+    if (img.getAttribute('aria-hidden') === 'true') return;
+    const alt = img.getAttribute('alt');
+    if (alt === null || (typeof alt === 'string' && alt.trim() === '' &&
+        !(img.getAttribute('role') === 'presentation'))) {
+      imgsNoAlt++;
+    }
+  });
+
+  // inputs without an accessible label
+  let inputsNoLabel = 0;
+  Array.from(document.querySelectorAll('input, select, textarea')).forEach(el => {
+    const type = (el.getAttribute('type') || '').toLowerCase();
+    if (type === 'hidden' || type === 'submit' || type === 'button' || type === 'reset')
+      return;
+    if (el.getAttribute('aria-label') || el.getAttribute('aria-labelledby')) return;
+    if (el.id) {
+      try {
+        if (document.querySelector("label[for='" + CSS.escape(el.id) + "']")) return;
+      } catch (e) {}
+    }
+    if (el.closest('label')) return;
+    inputsNoLabel++;
+  });
+
+  // small interactive tap targets (mobile-hostile UI)
+  let smallTaps = 0;
+  Array.from(document.querySelectorAll(
+    "a[href], button, input[type='submit'], input[type='button'], [role='button']"
+  )).forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) return;            // invisible
+    const min = Math.min(rect.width, rect.height);
+    if (min > 0 && min < 32) smallTaps++;
+  });
+
+  // mixed content — http resources on an https page
+  const isHttps = location.protocol === 'https:';
+  const insecure = [];
+  if (isHttps) {
+    Array.from(document.querySelectorAll('img[src], script[src], link[href], iframe[src], source[src]'))
+      .forEach(el => {
+        const src = el.getAttribute('src') || el.getAttribute('href') || '';
+        if (src.startsWith('http://') && insecure.length < 10) insecure.push(src);
+      });
+  }
+
+  // headings
+  const h1Count = document.querySelectorAll('h1').length;
+  const hasH1 = h1Count > 0;
+
+  // login-form heuristic: a form with a password field
+  const hasLoginForm = !!document.querySelector("input[type='password']");
+  // any obvious error / feedback region — exists if any element has aria-live,
+  // role=alert, or a class/id containing 'error' / 'feedback' / 'invalid'
+  const hasErrorRegion = !!document.querySelector(
+    "[aria-live], [role='alert'], [role='status'], " +
+    "[class*='error'], [id*='error'], [class*='feedback'], [class*='invalid']"
+  );
+
+  // visible body text (truncated) — used for lorem/placeholder detection
+  const bodyText = (document.body ? document.body.innerText : '')
+    .replace(/\s+/g, ' ').trim().slice(0, 4000);
+
+  return {
+    title: document.title || '',
+    meta_description: meta("meta[name='description']") || meta("meta[property='og:description']"),
+    canonical: canonical,
+    og: og,
+    links: links,
+    h1_count: h1Count,
+    has_h1: hasH1,
+    images_no_alt: imgsNoAlt,
+    inputs_no_label: inputsNoLabel,
+    small_tap_targets: smallTaps,
+    insecure_resources: insecure,
+    has_login_form: hasLoginForm,
+    has_error_region: hasErrorRegion,
+    visible_text: bodyText,
+    n_forms: document.querySelectorAll('form').length,
+    n_buttons: document.querySelectorAll(
+      "button, input[type='submit'], input[type='button'], [role='button']"
+    ).length,
+  };
+}
+"""
+
 
 @dataclass
 class PageNode:
@@ -34,6 +147,20 @@ class PageNode:
     n_forms: int = 0
     n_buttons: int = 0
     error: Optional[str] = None
+
+    # ---- audit-source fields ---------------------------------------------
+    meta_description: str = ""
+    canonical: str = ""
+    og_tags: dict = field(default_factory=dict)
+    links: list = field(default_factory=list)   # [{"href": "...", "text": "..."}]
+    h1_count: int = 0
+    images_no_alt: int = 0
+    inputs_no_label: int = 0
+    small_tap_targets: int = 0
+    insecure_resources: list = field(default_factory=list)
+    has_login_form: bool = False
+    has_error_region: bool = False
+    visible_text: str = ""
 
 
 @dataclass
@@ -123,9 +250,9 @@ class SiteCrawler:
                 if url in visited:
                     continue
                 visited.add(url)
-                node, links = self._visit(page, url)
+                node, raw_links = self._visit(page, url)
                 site.pages.append(node)
-                for href in links:
+                for href in raw_links:
                     norm = _normalize(url, href)
                     if _should_visit(norm, base_domain, visited | set(to_visit)):
                         to_visit.append(norm)
@@ -138,7 +265,7 @@ class SiteCrawler:
     def _visit(self, page, url: str):
         node = PageNode(url=url)
         started = time.time()
-        links: list = []
+        raw_link_hrefs: list = []
         try:
             response = page.goto(url, wait_until="domcontentloaded", timeout=self.timeout_ms)
             if response:
@@ -148,23 +275,30 @@ class SiteCrawler:
                 node.title = page.title()
             except Exception:
                 pass
-            counts = page.evaluate(
-                """() => ({
-                    links: Array.from(document.querySelectorAll('a[href]')).map(a => a.href),
-                    forms: document.querySelectorAll('form').length,
-                    buttons: document.querySelectorAll(
-                        "button, input[type='submit'], input[type='button'], [role='button']"
-                    ).length,
-                })"""
-            )
-            links = counts.get("links", []) or []
-            node.n_links = len(links)
-            node.n_forms = counts.get("forms", 0)
-            node.n_buttons = counts.get("buttons", 0)
+            data = page.evaluate(_AUDIT_JS) or {}
+
+            node.title = data.get("title") or node.title
+            node.meta_description = data.get("meta_description", "")
+            node.canonical = data.get("canonical", "")
+            node.og_tags = data.get("og", {}) or {}
+            node.links = data.get("links", []) or []
+            node.h1_count = data.get("h1_count", 0)
+            node.images_no_alt = data.get("images_no_alt", 0)
+            node.inputs_no_label = data.get("inputs_no_label", 0)
+            node.small_tap_targets = data.get("small_tap_targets", 0)
+            node.insecure_resources = data.get("insecure_resources", []) or []
+            node.has_login_form = bool(data.get("has_login_form"))
+            node.has_error_region = bool(data.get("has_error_region"))
+            node.visible_text = data.get("visible_text", "")
+            node.n_forms = data.get("n_forms", 0)
+            node.n_buttons = data.get("n_buttons", 0)
+            node.n_links = len(node.links)
+
+            raw_link_hrefs = [l.get("href", "") for l in node.links if l.get("href")]
         except PlaywrightTimeout:
             node.error = f"Timed out after {self.timeout_ms}ms"
             node.status = 0
         except Exception as e:
             node.error = str(e)[:300]
         node.load_time_ms = (time.time() - started) * 1000
-        return node, links
+        return node, raw_link_hrefs

@@ -14,10 +14,12 @@ and, when finished, the full report.
 """
 
 import os
+import json
 import time
 import uuid
 import logging
 import threading
+from datetime import datetime
 
 from flask import Flask, request, jsonify, send_from_directory
 
@@ -172,6 +174,8 @@ def api_personas():
             "summary": p.summary,
             "patience": p.patience,
             "mobile": bool(p.viewport.get("is_mobile")),
+            "default_on": getattr(p, "default_on", True),
+            "tier": getattr(p, "tier", "core"),
         }
         for p in PERSONAS
     ])
@@ -233,6 +237,25 @@ def api_get_run(job_id):
     if job is None:
         return jsonify({"error": "Unknown or expired job id."}), 404
     return jsonify(job.snapshot())
+
+
+@app.post("/api/early-access")
+def api_early_access():
+    """Collect early-access signups from the landing page into a local file."""
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email", "")).strip()
+    role = str(data.get("role", "")).strip()[:200]
+    if "@" not in email or "." not in email.split("@")[-1] or len(email) < 6:
+        return jsonify({"error": "A valid email address is required."}), 400
+    record = {"email": email, "role": role,
+              "at": datetime.now().isoformat(timespec="seconds")}
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "reports", "early_access.jsonl")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    log.info("Early-access signup: %s (%s)", email, role or "no role")
+    return jsonify({"ok": True}), 201
 
 
 # --------------------------------------------------------------------------

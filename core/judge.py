@@ -43,9 +43,18 @@ class SwarmReport:
 _JUDGE_SYSTEM = """You are a senior UX research lead reviewing an automated usability test.
 
 A swarm of simulated user personas each tried to accomplish the same goal on a
-website. You are given each persona's outcome, the steps they took, and the
-friction they logged. Judge it independently — personas sometimes claim success
+website. You are given each persona's outcome, the steps they took, the
+friction they logged, AND a static technical audit of the site (broken links,
+SEO/meta gaps, accessibility, copy bugs, UI tap targets, mixed content, auth
+softlock signals). Judge it independently — personas sometimes claim success
 when they didn't really finish, or give up over something trivial.
+
+When ranking "prioritized_fixes", combine BOTH sources:
+  - persona friction (subjective UX)
+  - audit findings (deterministic technical bugs)
+A static-audit "blocker" (lorem ipsum live in prod, mixed content blocked,
+broken link, login form with no error region) belongs at the top of the fix
+list even if no persona explicitly hit it.
 
 Produce:
 1. A verdict for each persona: "success", "partial", or "failure".
@@ -97,6 +106,35 @@ def _patience(run) -> str:
     return "?"  # patience isn't carried on the run; kept for prompt readability
 
 
+def _audit_digest(audit) -> str:
+    """Compact, prompt-friendly summary of static-audit findings."""
+    if audit is None or not audit.findings:
+        return ""
+    lines = [
+        f"Pages audited: {audit.pages_audited}, "
+        f"links checked: {audit.links_checked}, "
+        f"broken links: {audit.broken_links}",
+        f"Severity counts: "
+        f"{audit.by_severity('blocker')} blocker / "
+        f"{audit.by_severity('major')} major / "
+        f"{audit.by_severity('minor')} minor",
+        "Findings (grouped by category):",
+    ]
+    by_cat = audit.by_category()
+    cat_order = ["links", "auth", "mixed-content", "copy", "seo", "a11y", "ui"]
+    for cat in cat_order:
+        items = by_cat.get(cat, [])
+        if not items:
+            continue
+        lines.append(f"  [{cat}]")
+        for f in items[:8]:
+            detail = f" -> {f.detail}" if f.detail else ""
+            lines.append(f"    - [{f.severity}] {f.note}{detail}  ({f.page_url})")
+        if len(items) > 8:
+            lines.append(f"    ... and {len(items) - 8} more in this category")
+    return "\n".join(lines)
+
+
 class Judge:
     def __init__(self, llm=None):
         self.llm = llm
@@ -105,14 +143,17 @@ class Judge:
         if self.llm is None:
             return self._heuristic(swarm_result)
         digest = "\n\n".join(_run_digest(r) for r in swarm_result.runs)
+        audit_section = _audit_digest(getattr(swarm_result, "audit", None))
         user = (
             f"GOAL UNDER TEST: {swarm_result.goal}\n"
             f"TARGET SITE: {swarm_result.target_url}\n"
             f"PERSONAS IN SWARM: {len(swarm_result.runs)}\n\n"
             f"PERSONA RUNS:\n\n{digest}"
+            + (f"\n\nSTATIC SITE AUDIT (deterministic — no LLM produced this):\n{audit_section}"
+               if audit_section else "")
         )
         try:
-            data = self.llm.chat_json(_JUDGE_SYSTEM, user, max_tokens=1400, temperature=0.3)
+            data = self.llm.chat_json(_JUDGE_SYSTEM, user, max_tokens=1600, temperature=0.3)
         except LLMError:
             return self._heuristic(swarm_result)
         return self._from_json(data, swarm_result)
@@ -173,12 +214,31 @@ class Judge:
         ]
         n = len(runs) or 1
         succeeded = sum(1 for v in verdicts if v.verdict == "success")
-        blockers = swarm_result.blockers()
-        score = int(100 * succeeded / n) - min(40, blockers * 8)
+        persona_blockers = swarm_result.blockers()
+        audit = getattr(swarm_result, "audit", None)
+        audit_blockers = audit.by_severity("blocker") if audit else 0
+
+        # Audit blockers penalize the health score too — a lorem-ipsum page or
+        # a broken-link page is a real "this isn't ready" signal.
+        score = int(100 * succeeded / n) - min(40, persona_blockers * 8) - min(30, audit_blockers * 6)
         score = max(0, min(100, score))
 
         shared = [f.note for r in runs for f in r.friction_points if f.severity == "blocker"]
         fixes = []
+        # Audit blockers go to the top of the fix list, before persona friction.
+        if audit:
+            cat_label = {
+                "links": "broken link", "seo": "SEO/meta",
+                "a11y": "accessibility", "copy": "copywriting",
+                "ui": "UI", "auth": "auth flow", "mixed-content": "mixed content",
+            }
+            for f in audit.findings:
+                if f.severity == "blocker":
+                    fixes.append({
+                        "priority": "high",
+                        "issue": f.note,
+                        "why": f"Static audit ({cat_label.get(f.category, f.category)}) on {f.page_url}.",
+                    })
         for r in runs:
             for f in r.friction_points:
                 if f.severity in ("blocker", "major"):
@@ -187,16 +247,30 @@ class Judge:
                         "issue": f.note,
                         "why": f"Hit by {r.persona_name}.",
                     })
+        if audit:
+            for f in audit.findings:
+                if f.severity == "major":
+                    fixes.append({
+                        "priority": "medium",
+                        "issue": f.note,
+                        "why": f"Static audit ({f.category}) on {f.page_url}.",
+                    })
 
         worst = min(runs, key=lambda r: _outcome_rank(r.status), default=None)
         best = max(runs, key=lambda r: _outcome_rank(r.status), default=None)
+        audit_tail = (
+            f"  +  static audit: {audit_blockers} blocker(s), "
+            f"{audit.by_severity('major') if audit else 0} major"
+            if audit and audit.findings else ""
+        )
         return SwarmReport(
             health_score=score,
             headline=f"{succeeded}/{n} personas completed the goal "
-                     f"({blockers} blocker(s) found). Heuristic report — no AI judge.",
+                     f"({persona_blockers} persona blocker(s){audit_tail}). "
+                     f"Heuristic report — no AI judge.",
             persona_verdicts=verdicts,
             shared_blockers=shared[:8],
-            prioritized_fixes=fixes[:10],
+            prioritized_fixes=fixes[:12],
             worst_persona_id=worst.persona_id if worst else "",
             best_persona_id=best.persona_id if best else "",
         )

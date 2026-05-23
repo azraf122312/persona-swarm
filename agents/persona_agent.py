@@ -95,6 +95,20 @@ block THIS persona. Do not report issues this persona would not notice or care
 about. Severity: "blocker" = cannot continue, "major" = serious frustration,
 "minor" = mild annoyance.
 
+Be alert to these failure modes in particular — they are common and easy to miss:
+  - Confusing or broken COPY: lorem ipsum, "TODO" / "TBD" / placeholder text,
+    typos, idioms an outsider wouldn't get, vague link text ("click here").
+  - AUTH SOFTLOCKS: submitting a login / signup form and getting no feedback
+    (no error, no redirect), reaching a "forgot password" link that goes
+    nowhere, being looped back to the same auth page after a click. Flag as
+    blocker if it stops you from continuing.
+  - DEAD ENDS: clicks that visibly do nothing, links that 404, infinite
+    spinners, forms that submit but appear to vanish without confirmation.
+  - TRUST RED FLAGS for personas who care: missing pricing, missing privacy
+    or returns info before payment, hidden fees revealed only at the last step.
+  - UI EDGE CASES the persona can feel: tiny tap targets on mobile, content
+    overlapping or cut off, controls hidden behind a banner.
+
 Call action "done" only when the goal is truly accomplished. Call "give_up"
 when this persona would realistically quit. Use the element numbers exactly as
 shown.

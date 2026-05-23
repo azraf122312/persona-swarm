@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Persona Swarm — a swarm of personas tests your app</title>
-  <meta name="description" content="Drop a URL and a goal. Eight distinct user personas each try to accomplish it in their own browser. Get every dead end, blocker, and confusing flow real people hit." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>" />
+  <title>Persona Swarm — eight humans walk into your app</title>
+  <meta name="description" content="Drop a URL and a goal. Eight distinct user personas each try to accomplish it in their own browser. You get every dead end, blocker, and confusing flow real people hit — ranked by what to fix first." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230a0a0a'/><text x='50' y='65' text-anchor='middle' font-size='52' fill='%23fff' font-family='monospace' font-weight='700'>PS</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -17,104 +17,128 @@
   <header class="nav" id="nav">
     <div class="container nav-inner">
       <a class="brand" href="#top">
-        <span class="brand-mark">🐝</span>
+        <span class="brand-mark">PS</span>
         <span class="brand-name">Persona&nbsp;Swarm</span>
       </a>
       <nav class="nav-links">
-        <a href="#problem">Why</a>
-        <a href="#how">How it works</a>
-        <a href="#personas">Personas</a>
-        <a href="#report">The report</a>
+        <a href="#how">how it works</a>
+        <a href="#setup">setup</a>
+        <a href="#personas">the eight</a>
+        <a href="#questions">questions</a>
       </nav>
-      <a class="btn btn-primary btn-sm" href="run.html">Launch a swarm</a>
+      <a class="btn btn-primary btn-sm" href="#early">get early access</a>
     </div>
   </header>
 
   <main id="top">
 
-    <!-- ===== HERO ===== -->
+    <!-- ===== HERO BENTO ===== -->
     <section class="hero">
       <div class="container">
-        <div class="eyebrow reveal">Autonomous usability testing</div>
-        <h1 class="hero-title reveal">
-          A swarm of <em>personas</em><br />tests your app
-        </h1>
-        <p class="hero-sub reveal">
-          Drop a URL and a goal. Eight distinct user personas — each in its own
-          browser, each reasoning differently — try to accomplish it. Get every
-          dead end, blocker, and confusing flow real people hit.
-        </p>
-        <div class="hero-cta reveal">
-          <a class="btn btn-primary" href="run.html">Launch a swarm</a>
-          <a class="btn btn-ghost" href="#how">See how it works</a>
-        </div>
-        <div class="hero-stats reveal">
-          <span><b>8</b> distinct personas</span>
-          <span class="dot">·</span>
-          <span><b>parallel</b> browsers</span>
-          <span class="dot">·</span>
-          <span><b>regression</b> tracking</span>
-        </div>
+        <div class="bento">
 
-        <!-- live swarm console -->
-        <div class="console reveal" id="console">
-          <div class="console-bar">
-            <span class="cdot"></span><span class="cdot"></span><span class="cdot"></span>
-            <span class="console-title">persona-swarm — run</span>
-          </div>
-          <div class="console-body">
-            <div class="console-cmd">
-              <span class="prompt">$</span> swarm run
-              <span class="arg">--url</span> shop.example.com
-              <span class="arg">--goal</span> "buy a product"
+          <div class="cell-headline reveal">
+            <span class="eyebrow">autonomous usability testing</span>
+            <h1 class="hero-title">
+              Eight humans<br />
+              walk into <em>your app.</em><br />
+              <span class="hl">None of them are you.</span>
+            </h1>
+            <p class="hero-sub">
+              Drop a URL and a goal. Eight distinct personas — each in its own
+              browser, each reasoning differently — try to accomplish it. Five
+              minutes later you have every dead end, blocker, and confusing flow
+              real people hit, ranked by what to fix first.
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="run.html">launch a swarm →</a>
+              <a class="btn btn-ghost" href="#how">see how it works</a>
             </div>
-            <div class="console-rows" id="console-rows"><!-- rendered by JS --></div>
-            <div class="console-foot" id="console-foot"></div>
           </div>
+
+          <div class="cell-console reveal" id="console">
+            <div class="console">
+              <div class="console-bar">
+                <span class="cdot"></span><span class="cdot"></span><span class="cdot"></span>
+                <span class="console-title">swarm.live</span>
+              </div>
+              <div class="console-body">
+                <div class="console-cmd">
+                  <span class="prompt">$</span> swarm run
+                  <span class="arg">--url</span> shop.example.com
+                  <span class="arg">--goal</span> "buy a product"
+                </div>
+                <div class="console-rows" id="console-rows"><!-- JS --></div>
+                <div class="console-foot" id="console-foot"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cell-stats reveal" id="statband">
+            <div class="statband">
+              <div class="stat">
+                <div class="stat-num" data-count="8">0</div>
+                <div class="stat-label">personas / run</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num" data-count="1">0</div>
+                <div class="stat-label">browser each</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num" data-count="5" data-prefix="~" data-suffix=" min">0</div>
+                <div class="stat-label">to a full report</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num" data-count="0">0</div>
+                <div class="stat-label">test scripts to write</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
 
     <!-- ===== PROBLEM ===== -->
-    <section class="section" id="problem">
+    <section class="section section-tint" id="problem">
       <div class="container">
-        <div class="kicker reveal">The problem</div>
+        <div class="kicker reveal">01 / the problem</div>
         <h2 class="section-title reveal">
-          One test bot finds <em>one kind</em> of bug.
+          One bot finds <em>one kind</em> of bug.
         </h2>
         <p class="section-lead reveal">
           A scripted happy-path test only ever fails the way it was written to.
-          But your users aren't one person — they're impatient, cautious,
-          on a phone, using a screen reader, distrustful, distracted.
-          Each one gets stuck somewhere different, and a single bot never sees it.
+          Your users aren't one person — they're impatient, cautious, on a phone,
+          using a screen reader, distrustful, distracted. Each one gets stuck
+          somewhere different, and a single bot never sees it.
         </p>
-        <div class="contrast reveal">
-          <div class="contrast-col bad">
-            <div class="contrast-h">One bot</div>
+        <div class="contrast" data-stagger>
+          <div class="contrast-col bad reveal">
+            <div class="contrast-h">one bot</div>
             <ul>
-              <li>Follows the path it was scripted for</li>
-              <li>Reports the bug it was told to look for</li>
-              <li>Never feels friction — it has no patience to lose</li>
+              <li>follows the path it was scripted for</li>
+              <li>reports the bug it was told to look for</li>
+              <li>never feels friction — it has no patience to lose</li>
             </ul>
           </div>
-          <div class="contrast-col good">
-            <div class="contrast-h">A persona swarm</div>
+          <div class="contrast-col good reveal">
+            <div class="contrast-h">a persona swarm</div>
             <ul>
-              <li>Eight users reason and behave differently</li>
-              <li>Each abandons, hesitates, and rage-clicks on its own</li>
-              <li>Divergent coverage one bot could never produce</li>
+              <li>eight users reason and behave differently</li>
+              <li>each abandons, hesitates, and rage-clicks on its own</li>
+              <li>divergent coverage one bot could never produce</li>
             </ul>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== HOW IT WORKS ===== -->
+    <!-- ===== HOW IT WORKS — bento ===== -->
     <section class="section" id="how">
       <div class="container">
-        <div class="kicker reveal">How it works</div>
-        <h2 class="section-title reveal">From a URL to a verdict in five steps.</h2>
-        <ol class="steps">
+        <div class="kicker reveal">02 / pipeline</div>
+        <h2 class="section-title reveal">From a URL to a verdict in <em>five steps.</em></h2>
+        <ol class="steps" data-stagger>
           <li class="step reveal">
             <span class="step-no">01</span>
             <h3>Map the site</h3>
@@ -128,44 +152,106 @@
           <li class="step reveal">
             <span class="step-no">03</span>
             <h3>Navigate in character</h3>
-            <p>Every agent perceives the live page and decides its next move <em>as that persona</em>, logging friction the way that user would feel it.</p>
+            <p>Every agent perceives the live page and decides its next move <em>as that persona</em>, logging friction.</p>
           </li>
           <li class="step reveal">
             <span class="step-no">04</span>
             <h3>Judge the runs</h3>
-            <p>An independent judge scores each persona, finds blockers that hit several of them, and ranks the fixes.</p>
+            <p>An independent judge scores each persona, finds shared blockers, and ranks the fixes.</p>
           </li>
           <li class="step reveal">
             <span class="step-no">05</span>
             <h3>Diff for regressions</h3>
-            <p>Every run is remembered. Re-run later and the swarm flags any persona that went from success to failure.</p>
+            <p>Every run is remembered. Re-run later — the swarm flags any persona that went from success to failure since last time.</p>
           </li>
         </ol>
+      </div>
+    </section>
+
+    <!-- ===== SETUP ===== -->
+    <section class="section section-tint" id="setup">
+      <div class="container">
+        <div class="kicker reveal">03 / setup</div>
+        <h2 class="section-title reveal">
+          What you tell the swarm <em>before you launch.</em>
+        </h2>
+        <p class="section-lead reveal">
+          Plain English. No test scripts, no selectors, no YAML — the same brief
+          you'd write a human tester in a Slack DM.
+        </p>
+
+        <div class="setup-wrap reveal">
+          <div class="setup-panel" id="setup-panel">
+            <div class="setup-row">
+              <div class="setup-label">Target<span>any reachable URL</span></div>
+              <div class="setup-url">
+                <span class="setup-scheme">https://</span>
+                <span class="setup-typed" id="demo-url"></span><span class="setup-caret" id="caret-url"></span>
+                <span class="setup-tag" id="demo-tag">reachable</span>
+              </div>
+            </div>
+            <div class="setup-row">
+              <div class="setup-label">The swarm<span>who tries your goal</span></div>
+              <div class="setup-personas" id="demo-personas"><!-- JS --></div>
+            </div>
+            <div class="setup-row">
+              <div class="setup-label">Goal<span>plain English · what a user should be able to do</span></div>
+              <div class="setup-goal">
+                <span class="setup-typed" id="demo-goal"></span><span class="setup-caret" id="caret-goal"></span>
+              </div>
+            </div>
+            <div class="setup-launch">
+              <span class="setup-hint">runs in ~5 min · one browser per persona</span>
+              <a class="btn btn-primary" href="run.html" id="setup-btn">launch the swarm</a>
+            </div>
+          </div>
+
+          <aside class="presets">
+            <div class="presets-h">start from a preset</div>
+            <button class="preset reveal" type="button"
+                    data-url="app.example.io" data-goal="Sign up for an account and reach the dashboard.">
+              <div class="preset-name">signup gauntlet</div>
+              <p>Every persona tries to get from the landing page to a logged-in dashboard.</p>
+            </button>
+            <button class="preset reveal" type="button"
+                    data-url="shop.example.com" data-goal="Add a product to the cart and complete checkout.">
+              <div class="preset-name">checkout run</div>
+              <p>Pricing, trust signals, and the last-step friction that loses the sale.</p>
+            </button>
+            <button class="preset reveal" type="button"
+                    data-url="example.com" data-goal="Land on the homepage and figure out what this product does.">
+              <div class="preset-name">first impression</div>
+              <p>Can a stranger tell what you do and what to do next, in ten seconds?</p>
+            </button>
+            <div class="presets-foot">presets are starting points — click one to load it.</div>
+          </aside>
+        </div>
       </div>
     </section>
 
     <!-- ===== PERSONAS ===== -->
     <section class="section" id="personas">
       <div class="container">
-        <div class="kicker reveal">The swarm</div>
-        <h2 class="section-title reveal">Meet the <em>personas</em>.</h2>
+        <div class="kicker reveal">04 / the eight</div>
+        <h2 class="section-title reveal">Meet the <em>swarm.</em></h2>
         <p class="section-lead reveal">
           Each persona is a different person — different patience, different
-          viewport, different idea of what counts as broken.
+          viewport, different idea of what counts as broken. Each one fails on
+          its own terms.
         </p>
-        <div class="persona-grid" id="persona-grid"><!-- rendered by JS --></div>
+        <div class="persona-grid" id="persona-grid" data-stagger><!-- JS --></div>
       </div>
     </section>
 
     <!-- ===== REPORT ===== -->
-    <section class="section" id="report">
+    <section class="section section-tint" id="report">
       <div class="container">
-        <div class="kicker reveal">The report</div>
-        <h2 class="section-title reveal">A verdict, not a wall of logs.</h2>
+        <div class="kicker reveal">05 / output</div>
+        <h2 class="section-title reveal">A verdict, not <em>a wall of logs.</em></h2>
         <div class="report-card reveal">
           <div class="report-head">
             <div>
-              <div class="report-goal">Goal — “Buy a product”</div>
+              <div class="report-goal">"Buy a product"</div>
               <div class="report-url">shop.example.com</div>
             </div>
             <div class="score-ring" id="score-ring">
@@ -179,49 +265,238 @@
           </div>
           <div class="report-cols">
             <div class="report-block">
-              <div class="report-block-h">Shared blockers</div>
+              <div class="report-block-h">shared blockers</div>
               <ul class="blocker-list">
                 <li><span class="sev sev-blocker"></span>Shipping cost only shown on the final step</li>
-                <li><span class="sev sev-blocker"></span>“Checkout” button is a 16px tap target on mobile</li>
+                <li><span class="sev sev-blocker"></span>"Checkout" button is a 16px tap target on mobile</li>
                 <li><span class="sev sev-major"></span>Forced account creation before the cart is visible</li>
               </ul>
             </div>
             <div class="report-block">
-              <div class="report-block-h">Persona verdicts</div>
-              <ul class="verdict-list" id="verdict-list"><!-- rendered by JS --></ul>
+              <div class="report-block-h">persona verdicts</div>
+              <ul class="verdict-list" id="verdict-list"><!-- JS --></ul>
             </div>
           </div>
           <div class="report-foot">
-            <span class="regress-tag">▲ Regression</span>
+            <span class="regress-tag">▲ regression</span>
             Skeptical Shopper went <b>success → failure</b> since the last run.
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== RUN / CTA ===== -->
-    <section class="section section-cta" id="run">
+    <!-- ===== FAQ ===== -->
+    <section class="section" id="questions">
       <div class="container">
-        <h2 class="cta-title reveal">Stop guessing how users <em>fail</em>.</h2>
-        <p class="section-lead reveal">
-          Persona Swarm runs in your browser and locally. Drop in a URL, pick
-          your personas, and watch the swarm go.
-        </p>
-        <div class="run-block reveal">
-          <div class="console-bar">
-            <span class="cdot"></span><span class="cdot"></span><span class="cdot"></span>
-            <span class="console-title">getting started</span>
-          </div>
-          <pre class="run-code"><span class="c-cmt"># install</span>
-pip install -r requirements.txt
-playwright install chromium
+        <div class="kicker reveal">06 / honest questions</div>
+        <h2 class="section-title reveal">
+          What people ask <em>before pasting a URL.</em>
+        </h2>
+        <div class="faq" id="faq" data-stagger>
 
-<span class="c-cmt"># launch the web app</span>
-python server.py</pre>
+          <div class="faq-item reveal">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>Is the swarm real, or is the dashboard just a mockup?</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </button>
+            <div class="faq-a"><p>
+              Real. Each persona is an LLM driving its own headless Chromium
+              browser through Playwright. Every persona has a distinct system
+              prompt — its patience, its viewport, the things that frustrate it —
+              and it genuinely perceives the live page and clicks through your app.
+              The console on this page is a scripted demo; a real run drives real browsers.
+            </p></div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>Does anything I type leave my browser?</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </button>
+            <div class="faq-a"><p>
+              Persona Swarm runs locally — there is no Persona Swarm cloud. The
+              target URL, your goal, and your API key go only to the server you
+              run yourself (<code>server.py</code>). Your key is held in memory
+              for the run and never written to disk. Reports are saved to your
+              own <code>reports/</code> folder.
+            </p></div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>Do I need an API key?</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </button>
+            <div class="faq-a"><p>
+              Yes. The personas need an LLM to reason and act, so you bring an
+              Anthropic or OpenAI key. The run calls your provider directly —
+              you pay them for the tokens, and there's nothing to pay us.
+            </p></div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>How is this different from Playwright tests I already write?</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </button>
+            <div class="faq-a"><p>
+              A Playwright test confirms the path you scripted still works.
+              Persona Swarm finds the paths you never scripted. The personas
+              wander off the happy path on purpose — an impatient power user, a
+              screen-reader user, a skeptical shopper — and each one gets stuck
+              somewhere your test suite has no reason to look.
+            </p></div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>What does it actually do to my site?</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </button>
+            <div class="faq-a"><p>
+              It reads, scrolls, types, and clicks — the run is exploratory. The
+              personas are looking for friction, not trying to fire destructive
+              actions. If your goal touches anything irreversible, point the swarm
+              at a staging URL and re-run against production once it's clean.
+            </p></div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>Will it work on a vibe-coded app — something I built with Claude Code or Cursor?</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </button>
+            <div class="faq-a"><p>
+              Yes — that's a primary use case. The report names each friction
+              point, the persona who hit it, and ranks the fixes by priority, so
+              you can hand a clear, prioritized list straight to the LLM writing
+              your code.
+            </p></div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>What does the swarm actually catch beyond "the user got stuck"?</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </button>
+            <div class="faq-a"><p>
+              On top of the persona UX runs, every swarm also runs a static
+              technical audit of the mapped site. It catches:
+              <strong>broken links</strong> (HEAD-tested),
+              <strong>SEO &amp; meta gaps</strong> (missing title, description,
+              h1, canonical, Open Graph),
+              <strong>accessibility</strong> (images without alt, form inputs
+              without labels),
+              <strong>copywriting bugs</strong> (lorem ipsum live in prod,
+              <code>TODO</code> / <code>TBD</code> placeholders, vague
+              "click here" link text),
+              <strong>UI edges</strong> (tap targets under 32×32px),
+              <strong>mixed content</strong> (http resources on https pages),
+              and <strong>auth softlock signals</strong> (login forms with no
+              visible error region). Audit findings get merged with persona
+              findings into one ranked fix list.
+            </p></div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>How long does a run take?</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </button>
+            <div class="faq-a"><p>
+              A few minutes. The site is mapped once, then up to eight persona
+              browsers run in parallel. More personas, more steps, and more pages
+              cost more time and more tokens — all of which you control in Setup.
+            </p></div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-q" type="button" aria-expanded="false">
+              <span>Can it catch regressions?</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </button>
+            <div class="faq-a"><p>
+              Yes. Every run is saved, keyed to its URL and goal. Re-run later and
+              the swarm diffs against the previous run — a persona that slipped
+              from success to failure, a new blocker, a dropped health score — and
+              flags it at the top of the report.
+            </p></div>
+          </div>
+
         </div>
-        <div class="hero-cta reveal">
-          <a class="btn btn-primary" href="run.html">Launch a swarm</a>
-          <a class="btn btn-ghost" href="https://github.com" target="_blank" rel="noopener">View the code</a>
+      </div>
+    </section>
+
+    <!-- ===== EARLY ACCESS ===== -->
+    <section class="section section-early" id="early">
+      <div class="container">
+        <div class="kicker reveal">07 / early access</div>
+        <h2 class="section-title reveal">It's early. We're shipping <em>in stages.</em></h2>
+        <p class="section-lead reveal">
+          Persona Swarm runs today — locally, open, yours to clone. Tell us who
+          you are and we'll bring you into the hosted beta as the next stages open up.
+        </p>
+
+        <div class="early-grid reveal">
+          <div class="early-form-wrap">
+            <form class="ea-form" id="ea-form" novalidate>
+              <div class="ea-field">
+                <label for="ea-email">email</label>
+                <input id="ea-email" type="email" placeholder="you@company.com" required />
+              </div>
+              <div class="ea-field">
+                <label for="ea-role">what do you build?</label>
+                <select id="ea-role">
+                  <option value="">pick one — optional</option>
+                  <option>Solo founder / indie hacker</option>
+                  <option>Frontend / web engineer</option>
+                  <option>Designer</option>
+                  <option>QA / test engineer</option>
+                  <option>Product manager</option>
+                  <option>Something else</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary ea-submit" id="ea-submit">
+                get early access
+              </button>
+              <p class="ea-note" id="ea-note">
+                no spam. no fake testimonials. one email, when your slot opens.
+              </p>
+            </form>
+            <div class="ea-success" id="ea-success" hidden>
+              <div class="ea-success-mark">✓</div>
+              <div class="ea-success-h">you're on the list.</div>
+              <p>We'll email you the moment the next stage opens. In the meantime,
+                 the swarm already runs locally — <a href="run.html">launch one now</a>.</p>
+            </div>
+          </div>
+
+          <div class="roadmap" data-stagger>
+            <div class="road road-done reveal">
+              <div class="road-side"><span class="road-dot"></span><span class="road-line"></span></div>
+              <div class="road-body">
+                <div class="road-stage">shipped</div>
+                <p>Eight personas, parallel isolated browsers, the independent AI
+                   judge, and run-over-run regression diffs.</p>
+              </div>
+            </div>
+            <div class="road road-now reveal">
+              <div class="road-side"><span class="road-dot"></span><span class="road-line"></span></div>
+              <div class="road-body">
+                <div class="road-stage">now</div>
+                <p>The in-browser run dashboard — a live persona console and the
+                   full report, no Streamlit needed.</p>
+              </div>
+            </div>
+            <div class="road road-next reveal">
+              <div class="road-side"><span class="road-dot"></span></div>
+              <div class="road-body">
+                <div class="road-stage">next</div>
+                <p>Scheduled runs, shareable report links, a CI check, and a
+                   bigger persona roster.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -231,10 +506,10 @@ python server.py</pre>
   <footer class="footer">
     <div class="container footer-inner">
       <div class="brand">
-        <span class="brand-mark">🐝</span>
+        <span class="brand-mark">PS</span>
         <span class="brand-name">Persona Swarm</span>
       </div>
-      <p class="footer-note">A swarm of personas tests your app. Built with Playwright + Streamlit.</p>
+      <p class="footer-note">a swarm of personas tests your app · built with playwright + flask</p>
     </div>
   </footer>
 

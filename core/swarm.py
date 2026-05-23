@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from core.crawler import SiteCrawler, SiteMap
+from core.auditor import SiteAuditor, AuditResult
 from agents.persona_agent import PersonaAgent, PersonaRun
 from personas.profiles import get_personas
 
@@ -29,6 +30,7 @@ class SwarmResult:
     started_at: str = ""
     total_time_ms: float = 0.0
     site_map: SiteMap = None
+    audit: AuditResult = None
     runs: list = field(default_factory=list)  # list[PersonaRun]
 
     def completed(self):
@@ -87,6 +89,21 @@ class PersonaSwarm:
         result.site_map = crawler.crawl(target_url, max_pages=max_pages)
         emit({"event": "site_mapped", "pages": result.site_map.pages_crawled})
         site_overview = result.site_map.overview()
+
+        # Phase 1b — static audit of the mapped pages (broken links, SEO/meta,
+        # a11y, lorem ipsum, mixed content, tap targets, auth softlocks).
+        # Runs in parallel with the personas being spawned; results are stored
+        # on the SwarmResult and merged into the report at the end.
+        try:
+            auditor = SiteAuditor()
+            result.audit = auditor.audit(result.site_map)
+            emit({"event": "audit_done",
+                  "pages": result.audit.pages_audited,
+                  "findings": len(result.audit.findings),
+                  "broken_links": result.audit.broken_links})
+        except Exception as e:
+            result.audit = AuditResult()
+            emit({"event": "audit_error", "error": str(e)[:160]})
 
         # Phase 2 — dispatch one persona agent per persona, in parallel.
         personas = get_personas(persona_ids)

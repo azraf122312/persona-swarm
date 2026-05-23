@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Persona Swarm — run a swarm</title>
   <meta name="description" content="Launch a persona swarm against any URL — live in your browser." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230a0a0a'/><text x='50' y='65' text-anchor='middle' font-size='52' fill='%23fff' font-family='monospace' font-weight='700'>PS</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -17,15 +17,15 @@
   <header class="nav scrolled" id="nav">
     <div class="container nav-inner">
       <a class="brand" href="index.html">
-        <span class="brand-mark">🐝</span>
+        <span class="brand-mark">PS</span>
         <span class="brand-name">Persona&nbsp;Swarm</span>
       </a>
       <nav class="nav-links">
-        <a href="index.html#how">How it works</a>
-        <a href="index.html#personas">Personas</a>
-        <a href="index.html#report">The report</a>
+        <a href="index.html#how">how it works</a>
+        <a href="index.html#personas">the eight</a>
+        <a href="index.html#report">the report</a>
       </nav>
-      <a class="btn btn-ghost btn-sm" href="index.html">← Landing</a>
+      <a class="btn btn-ghost btn-sm" href="index.html">← landing</a>
     </div>
   </header>
 
@@ -34,8 +34,8 @@
     <!-- ===== APP HEAD ===== -->
     <section class="app-head">
       <div class="container">
-        <div class="eyebrow">Run a swarm</div>
-        <h1 class="app-title">Point the swarm at a <em>real URL</em>.</h1>
+        <div class="eyebrow">run a swarm</div>
+        <h1 class="app-title">Point the swarm at a <em>real URL.</em></h1>
         <p class="app-sub">
           Enter a URL and a goal, pick your personas, and the swarm runs live —
           mapping the site, exploring it in character, then judging the result.
@@ -83,6 +83,7 @@
           <label>Personas in the swarm</label>
           <div class="pick-grid" id="persona-pick"><!-- rendered by app.js --></div>
           <div class="pick-actions">
+            <button type="button" class="linkbtn" id="pick-core">Core 8 only</button>
             <button type="button" class="linkbtn" id="pick-all">Select all</button>
             <button type="button" class="linkbtn" id="pick-none">Clear</button>
           </div>
@@ -137,10 +138,10 @@
   <footer class="footer">
     <div class="container footer-inner">
       <div class="brand">
-        <span class="brand-mark">🐝</span>
+        <span class="brand-mark">PS</span>
         <span class="brand-name">Persona Swarm</span>
       </div>
-      <p class="footer-note">A swarm of personas tests your app. Built with Playwright + Flask.</p>
+      <p class="footer-note">a swarm of personas tests your app · built with playwright + flask</p>
     </div>
   </footer>
 

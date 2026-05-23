@@ -64,6 +64,17 @@
   providerSel.addEventListener("change", function () { syncProvider(false); });
 
   /* ---- persona picker ----------------------------------------------- */
+  var TIER_LABELS = {
+    core:  "Core swarm — runs by default",
+    extra: "Extra personas — opt-in, universal value",
+    niche: "Niche personas — context-specific (B2B, commerce, marketing)"
+  };
+  var TIER_HINTS = {
+    core:  "These eight cover the orthogonal failure modes — patience, device, accessibility, language, trust.",
+    extra: "Tick these for a thorough run. Each adds ~30s of runtime and ~$0.10 in tokens.",
+    niche: "Enable the ones that fit your product. Cancel hunter for subscriptions; compliance buyer for B2B; first-touch prospect for marketing pages."
+  };
+
   function renderPersonas() {
     pickGrid.innerHTML = "";
     if (!personas.length) {
@@ -71,33 +82,62 @@
         "Could not load personas — is the server running? (python server.py)"));
       return;
     }
+
+    // group by tier, preserving roster order within each
+    var groups = { core: [], extra: [], niche: [] };
     personas.forEach(function (p) {
-      if (selected[p.id] === undefined) selected[p.id] = true;
-      var chip = el("button", "pick" + (selected[p.id] ? " on" : ""));
-      chip.type = "button";
-      chip.setAttribute("aria-pressed", String(!!selected[p.id]));
+      var t = p.tier || "core";
+      (groups[t] || groups.core).push(p);
+    });
 
-      var top = el("div", "pick-top");
-      top.appendChild(el("span", "pick-emoji", p.emoji));
-      top.appendChild(el("span", "pick-name", p.name));
-      top.appendChild(el("span", "pick-check", "✓"));
-      chip.appendChild(top);
-      chip.appendChild(el("p", "pick-summary", p.summary));
+    ["core", "extra", "niche"].forEach(function (tier) {
+      var group = groups[tier];
+      if (!group.length) return;
 
-      chip.addEventListener("click", function () {
-        selected[p.id] = !selected[p.id];
-        chip.classList.toggle("on", selected[p.id]);
+      var head = el("div", "pick-tier-head");
+      head.appendChild(el("div", "pick-tier-name", TIER_LABELS[tier]));
+      head.appendChild(el("div", "pick-tier-hint", TIER_HINTS[tier]));
+      pickGrid.appendChild(head);
+
+      group.forEach(function (p) {
+        if (selected[p.id] === undefined) {
+          // honor server default_on (core defaults true, extra/niche false)
+          selected[p.id] = p.default_on !== false;
+        }
+        var chip = el("button", "pick" + (selected[p.id] ? " on" : ""));
+        chip.type = "button";
         chip.setAttribute("aria-pressed", String(!!selected[p.id]));
+
+        var top = el("div", "pick-top");
+        top.appendChild(el("span", "pick-emoji", p.emoji));
+        top.appendChild(el("span", "pick-name", p.name));
+        top.appendChild(el("span", "pick-check", "✓"));
+        chip.appendChild(top);
+        chip.appendChild(el("p", "pick-summary", p.summary));
+
+        chip.addEventListener("click", function () {
+          selected[p.id] = !selected[p.id];
+          chip.classList.toggle("on", selected[p.id]);
+          chip.setAttribute("aria-pressed", String(!!selected[p.id]));
+        });
+        pickGrid.appendChild(chip);
       });
-      pickGrid.appendChild(chip);
     });
   }
   function setAll(value) {
     personas.forEach(function (p) { selected[p.id] = value; });
     renderPersonas();
   }
+  function setCoreOnly() {
+    personas.forEach(function (p) {
+      selected[p.id] = (p.tier || "core") === "core";
+    });
+    renderPersonas();
+  }
   $("pick-all").addEventListener("click", function () { setAll(true); });
   $("pick-none").addEventListener("click", function () { setAll(false); });
+  var coreBtn = $("pick-core");
+  if (coreBtn) coreBtn.addEventListener("click", setCoreOnly);
 
   /* ---- persisted form values (never the API key) -------------------- */
   function restore() {
@@ -331,6 +371,12 @@
 
     if (reg && reg.has_baseline) panel.appendChild(buildRegression(reg));
 
+    // static audit
+    var audit = rd.audit;
+    if (audit && audit.enabled && audit.findings && audit.findings.length) {
+      panel.appendChild(buildAudit(audit));
+    }
+
     // shared blockers
     if (sr.shared_blockers && sr.shared_blockers.length) {
       var sb = el("div", "results-block");
@@ -427,6 +473,69 @@
     });
     if (!(reg.regressions || []).length && !(reg.improvements || []).length)
       box.appendChild(el("p", "hint", "No verdict changes since the last run."));
+    return box;
+  }
+
+  function buildAudit(audit) {
+    var box = el("div", "results-block audit-block");
+    box.appendChild(el("h3", "results-h", "Site audit — broken links, SEO, a11y, copy"));
+
+    var c = audit.counts || {};
+    var summary = el("p", "audit-summary");
+    summary.appendChild(el("span", "audit-stat", String(audit.pages_audited || 0) + " pages"));
+    summary.appendChild(el("span", "audit-stat", String(audit.links_checked || 0) + " links checked"));
+    summary.appendChild(el("span", "audit-stat", String(audit.broken_links || 0) + " broken"));
+    summary.appendChild(el("span", "audit-stat sev-blocker-stat", (c.blocker || 0) + " blocker"));
+    summary.appendChild(el("span", "audit-stat sev-major-stat",   (c.major || 0) + " major"));
+    summary.appendChild(el("span", "audit-stat sev-minor-stat",   (c.minor || 0) + " minor"));
+    box.appendChild(summary);
+
+    var CAT_LABELS = {
+      "links": "Broken / problem links",
+      "auth": "Auth softlock signals",
+      "mixed-content": "Mixed content",
+      "copy": "Copywriting",
+      "seo": "SEO & meta",
+      "a11y": "Accessibility",
+      "ui": "UI edges"
+    };
+    var ORDER = ["links", "auth", "mixed-content", "copy", "seo", "a11y", "ui"];
+    var byCat = audit.by_category || {};
+
+    ORDER.forEach(function (cat) {
+      var items = byCat[cat] || [];
+      if (!items.length) return;
+      var det = el("details", "audit-cat");
+      var blockers = items.filter(function (f) { return f.severity === "blocker"; }).length;
+      det.open = blockers > 0;  // open by default if there's a blocker in the category
+      var sum = el("summary");
+      sum.appendChild(el("span", "audit-cat-name", CAT_LABELS[cat] || cat));
+      sum.appendChild(el("span", "audit-cat-count", "(" + items.length + ")"));
+      det.appendChild(sum);
+
+      var ul = el("ul", "audit-list");
+      items.slice(0, 30).forEach(function (f) {
+        var li = el("li", "audit-item audit-" + f.severity);
+        li.appendChild(el("span", "audit-sev sev-" + f.severity, f.severity));
+        var body = el("div", "audit-body");
+        body.appendChild(el("div", "audit-note", f.note));
+        var meta = el("div", "audit-meta");
+        meta.appendChild(el("span", "audit-url", f.page_url));
+        if (f.detail) {
+          meta.appendChild(el("span", "audit-detail", "→ " + f.detail));
+        }
+        body.appendChild(meta);
+        li.appendChild(body);
+        ul.appendChild(li);
+      });
+      if (items.length > 30) {
+        ul.appendChild(el("li", "audit-item audit-more",
+          "... and " + (items.length - 30) + " more in this category."));
+      }
+      det.appendChild(ul);
+      box.appendChild(det);
+    });
+
     return box;
   }
 

@@ -15,6 +15,7 @@ from datetime import datetime
 
 def to_dict(swarm_result, swarm_report) -> dict:
     sm = swarm_result.site_map
+    audit = swarm_result.audit
     personas = []
     for r in swarm_result.runs:
         verdict = swarm_report.verdict_for(r.persona_id)
@@ -73,7 +74,39 @@ def to_dict(swarm_result, swarm_report) -> dict:
             "total_friction": swarm_result.total_friction(),
             "blockers": swarm_result.blockers(),
         },
+        "audit": _audit_to_dict(audit),
         "personas": personas,
+    }
+
+
+def _audit_to_dict(audit) -> dict:
+    """Static-audit findings, grouped by category for the UI."""
+    if audit is None:
+        return {"enabled": False, "findings": [], "by_category": {},
+                "pages_audited": 0, "links_checked": 0, "broken_links": 0,
+                "counts": {"blocker": 0, "major": 0, "minor": 0, "total": 0}}
+    findings = [
+        {"category": f.category, "severity": f.severity, "page_url": f.page_url,
+         "note": f.note, "detail": f.detail}
+        for f in audit.findings
+    ]
+    by_cat: dict = {}
+    for f in findings:
+        by_cat.setdefault(f["category"], []).append(f)
+    counts = {
+        "blocker": audit.by_severity("blocker"),
+        "major":   audit.by_severity("major"),
+        "minor":   audit.by_severity("minor"),
+        "total":   len(findings),
+    }
+    return {
+        "enabled": True,
+        "findings": findings,
+        "by_category": by_cat,
+        "pages_audited": audit.pages_audited,
+        "links_checked": audit.links_checked,
+        "broken_links": audit.broken_links,
+        "counts": counts,
     }
 
 
@@ -115,6 +148,45 @@ def generate_markdown(report_dict: dict) -> str:
             if fix.get("why"):
                 md.append(f"  - _{fix['why']}_")
         md.append("")
+
+    audit = report_dict.get("audit") or {}
+    if audit.get("enabled") and audit.get("findings"):
+        c = audit.get("counts", {})
+        md += [
+            "## Site Audit (static, no LLM)",
+            "",
+            f"Pages audited: {audit.get('pages_audited', 0)}  |  "
+            f"Links checked: {audit.get('links_checked', 0)}  |  "
+            f"Broken links: {audit.get('broken_links', 0)}",
+            f"Findings: {c.get('total', 0)} "
+            f"({c.get('blocker', 0)} blocker, {c.get('major', 0)} major, "
+            f"{c.get('minor', 0)} minor)",
+            "",
+        ]
+        category_labels = {
+            "links": "Broken / problem links",
+            "seo": "SEO & meta",
+            "a11y": "Accessibility",
+            "copy": "Copywriting",
+            "ui": "UI edges",
+            "mixed-content": "Mixed content",
+            "auth": "Auth softlock signals",
+        }
+        for cat, label in category_labels.items():
+            items = audit.get("by_category", {}).get(cat, [])
+            if not items:
+                continue
+            md.append(f"### {label}")
+            md.append("")
+            for f in items[:20]:
+                line = f"- **[{f['severity']}]** {f['note']} _({f['page_url']})_"
+                if f.get("detail"):
+                    line += f"\n  - target: `{f['detail']}`"
+                md.append(line)
+            if len(items) > 20:
+                md.append(f"- ...and {len(items) - 20} more.")
+            md.append("")
+
     md += ["## Per-Persona Results", ""]
     for p in report_dict["personas"]:
         md.append(f"### {p['emoji']} {p['persona_name']} — {p['verdict'].upper()}")
